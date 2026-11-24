@@ -32,14 +32,16 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 .cv{position:relative}ul{padding-left:18px;margin:8px 0 0}li{margin-bottom:9px}
 .tw{overflow-x:auto}
 .map-layout{display:grid;grid-template-columns:1.55fr .45fr;gap:16px;align-items:stretch}
-.map-wrap{min-height:520px;border-radius:10px;background:linear-gradient(145deg,#f8fbff,#eef3ff);overflow:hidden;position:relative}
+.map-wrap{min-height:560px;border-radius:10px;background:linear-gradient(145deg,#f8fbff,#eef3ff);overflow:hidden;position:relative}
 .map-wrap #sdg-map{background:#f8fbff}
 #sdg-map .leaflet-control-container{display:none}
 .sdg-tooltip{border:0;border-radius:7px;background:#111a35;color:white;padding:7px 9px;font:700 12px "DM Sans",sans-serif;box-shadow:0 8px 24px rgba(17,26,53,.18)}
 .sdg-tooltip::before{border-top-color:#111a35!important}
+.state-label{border:0!important;background:transparent!important;box-shadow:none!important;color:#111a35!important;text-shadow:0 1px 2px #fff,1px 0 2px #fff,-1px 0 2px #fff,0 -1px 2px #fff;font:800 8px "DM Sans",sans-serif!important;text-align:center;white-space:nowrap}
+.state-label-dark{color:#fff!important;text-shadow:0 1px 2px #111a35,1px 0 2px #111a35,-1px 0 2px #111a35,0 -1px 2px #111a35}
 .map-wrap::after{content:"Loading Nigeria map…";position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:12px;pointer-events:none}
 .map-wrap.loaded::after{display:none}
-#sdg-map{width:100%;height:520px}
+#sdg-map{width:100%;height:560px}
 .map-summary{display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line);border-radius:10px;padding:20px}
 .map-summary span{color:var(--mut);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
 .map-summary strong{margin:8px 0 4px;font:800 38px "Manrope",sans-serif;letter-spacing:-2px;color:var(--acc)}
@@ -124,6 +126,14 @@ async function renderMap(k,u,g,ranked){
     return selected;
   };
   const normalize=name=>name==='Abuja Federal Capital Territory'?'FCT':name;
+  const compactLabel=name=>({
+    'Abia':'ABI','Adamawa':'ADA','Akwa Ibom':'AKW','Anambra':'ANA','Bauchi':'BAU','Bayelsa':'BAY',
+    'Benue':'BEN','Borno':'BOR','Cross River':'CRS','Delta':'DEL','Ebonyi':'EBY','Edo':'EDO',
+    'Ekiti':'EKI','Enugu':'ENU','FCT':'FCT','Gombe':'GOM','Imo':'IMO','Jigawa':'JIG',
+    'Kaduna':'KAD','Kano':'KAN','Katsina':'KAT','Kebbi':'KEB','Kogi':'KOG','Kwara':'KWA',
+    'Lagos':'LOS','Nasarawa':'NAS','Niger':'NIG','Ogun':'OGU','Ondo':'OND','Osun':'OSU',
+    'Oyo':'OYO','Plateau':'PLA','Rivers':'RIV','Sokoto':'SOK','Taraba':'TAR','Yobe':'YOB','Zamfara':'ZAM'
+  })[name]||name;
   const layer=L.geoJSON(geo,{style(feature){
     const name=normalize(feature.properties.shapeName);
     const row=dataByName.get(name);
@@ -132,6 +142,16 @@ async function renderMap(k,u,g,ranked){
     const name=normalize(feature.properties.shapeName);
     const row=dataByName.get(name);
     polygon.bindTooltip(row?`${name}: ${row.v[k]} ${u}`:`${name}: No data`,{sticky:true,direction:'top',className:'sdg-tooltip'});
+    const value=row?row.v[k]:null;
+    const isDark=value!=null&&((value-low)/(high-low||1))>.62;
+    const shortName=compactLabel(name);
+    const label=L.tooltip({
+      permanent:true,
+      direction:'center',
+      className:`state-label${isDark?' state-label-dark':''}`,
+      interactive:false
+    }).setContent(shortName).setLatLng(polygon.getBounds().getCenter());
+    label.addTo(map);
     polygon.on({mouseover(e){e.target.setStyle({weight:2,color:'#2457f5',fillOpacity:1});},mouseout(e){layer.resetStyle(e.target);}});
   }}).addTo(map);
   map.fitBounds(layer.getBounds(),{padding:[18,18]});
