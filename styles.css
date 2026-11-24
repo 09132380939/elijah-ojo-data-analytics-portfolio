@@ -262,6 +262,17 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
 .project-meta span { padding: 6px 8px; border-radius: 4px; background: var(--pale); color: #4e648f; font-size: 9px; font-weight: 800; }
 .pharmacy-art { background: #edf3fd; display: grid; place-items: center; }
 .pharmacy-art img { width: 94%; height: 88%; object-fit: contain; border-radius: 6px; box-shadow: 0 12px 28px rgba(27,53,105,.12); }
+.sdg-art { background: linear-gradient(145deg, #edf8f2, #cfe6d9); display: grid; place-items: center; }
+.sdg-preview { width: 84%; height: 78%; padding: 13px; border: 1px solid rgba(11,122,75,.12); border-radius: 8px; background: #fafaf7; box-shadow: 0 16px 36px rgba(35,91,63,.16); }
+.sdg-preview-head { display: flex; align-items: end; justify-content: space-between; height: 34px; }
+.sdg-preview-head span { color: #6b746f; font-size: 7px; font-weight: 800; letter-spacing: .8px; }
+.sdg-preview-head strong { color: #0b7a4b; font: 800 16px "Manrope"; }
+.sdg-kpis { height: 58px; margin: 8px 0 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.sdg-kpis i { border: 1px solid #e3e6e1; border-radius: 5px; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.sdg-kpis b { color: #0b7a4b; font-size: 13px; }
+.sdg-kpis small { color: #6b746f; font-size: 6px; }
+.sdg-bars { height: 68px; display: flex; align-items: end; gap: 8px; border-bottom: 1px solid #d7ddd7; }
+.sdg-bars span { flex: 1; height: var(--h); border-radius: 3px 3px 0 0; background: #0b7a4b; opacity: .78; }
 .case-study-link {
   margin-top: 16px; padding: 0; border: 0; background: transparent;
   color: var(--blue); display: inline-flex; align-items: center; gap: 8px;
