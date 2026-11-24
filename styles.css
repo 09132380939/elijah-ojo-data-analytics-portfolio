@@ -224,10 +224,18 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
 .offering-grid h3 { margin: 38px 0 12px; font-size: 18px; }
 .offering-grid p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
 
-.project-grid { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 18px; }
-.project-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: white; }
-.project-art { height: 280px; position: relative; overflow: hidden; }
-.project-large .project-art { height: 280px; }
+.project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.project-card {
+  border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: white;
+  box-shadow: 0 12px 38px rgba(24,43,92,.06); transition: transform .28s, box-shadow .28s;
+}
+.project-card:hover { transform: translateY(-6px); box-shadow: 0 24px 55px rgba(24,43,92,.12); }
+.project-art { height: 330px; position: relative; overflow: hidden; }
+.project-large { grid-column: 1 / -1; display: grid; grid-template-columns: 1.15fr .85fr; }
+.project-large .project-art { height: 420px; }
+.project-large .project-info { display: flex; flex-direction: column; justify-content: center; padding: 44px; }
+.project-large .project-info h3 { max-width: 440px; font-size: 28px; }
+.project-large .project-info p { max-width: 440px; min-height: 0; font-size: 14px; }
 .art-sales { background: linear-gradient(145deg, #e8efff, #b9caf3); display: grid; place-items: center; }
 .art-window { width: 82%; height: 74%; border-radius: 8px; background: white; box-shadow: 0 18px 40px rgba(40,69,136,.2); overflow: hidden; }
 .art-toolbar { height: 24px; background: #16244a; display: flex; align-items: center; gap: 4px; padding-left: 8px; }
@@ -256,7 +264,10 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
 .op-bars i:nth-child(1) { height: 36%; }.op-bars i:nth-child(2) { height: 58%; }.op-bars i:nth-child(3) { height: 48%; }.op-bars i:nth-child(4) { height: 82%; }.op-bars i:nth-child(5) { height: 68%; }
 .project-info { padding: 24px; }
 .project-info > span { color: var(--blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.project-info h3 { margin: 10px 0 8px; font-size: 18px; }
+.project-index::after {
+  content: ""; display: inline-block; width: 24px; height: 1px; margin: 0 0 3px 9px; background: currentColor; opacity: .55;
+}
+.project-info h3 { margin: 10px 0 8px; font-size: 21px; }
 .project-info p { min-height: 64px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
 .project-meta { display: flex; gap: 7px; margin-top: 18px; }
 .project-meta span { padding: 6px 8px; border-radius: 4px; background: var(--pale); color: #4e648f; font-size: 9px; font-weight: 800; }
@@ -279,6 +290,11 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
   font-size: 12px; font-weight: 800; cursor: pointer;
 }
 .case-study-link span { font-size: 15px; }
+.pharmacy-project .project-art,
+.sdg-project .project-art { height: 360px; }
+.pharmacy-project .project-info,
+.sdg-project .project-info { min-height: 230px; }
+.sdg-art { background: radial-gradient(circle at 70% 20%,#dce8ff 0,#edf3ff 24%,#dce6f7 100%); }
 .case-study-modal {
   width: min(1040px, calc(100vw - 32px)); max-height: calc(100vh - 40px);
   padding: 44px; border: 0; border-radius: 16px; color: var(--ink);
@@ -356,10 +372,8 @@ footer p { color: var(--muted); font-size: 12px; }
   .portrait-card { left: 100px; width: 360px; }
   .metric-card-main { left: -10px; }
   .chip-sql { left: 40px; }
-  .project-grid { grid-template-columns: 1.1fr 1fr; }
-  .project-card:last-child { grid-column: 1 / -1; }
-  .project-card:last-child { display: grid; grid-template-columns: 1fr 1fr; }
-  .project-card:last-child .project-art { height: 280px; }
+  .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .project-large { grid-template-columns: 1fr 1fr; }
   .about { grid-template-columns: 1fr 1fr; gap: 40px; }
   .offering-grid { grid-template-columns: 1fr 1fr; }
   .offering-grid article:nth-child(2) { border-right: 0; }
@@ -396,7 +410,8 @@ footer p { color: var(--muted); font-size: 12px; }
   .about-highlights { margin-top: 20px; }
   .offering-grid { grid-template-columns: 1fr 1fr; }
   .project-grid { grid-template-columns: 1fr; }
-  .project-card:last-child { grid-column: auto; display: block; }
+  .project-large { grid-column: auto; grid-template-columns: 1fr; }
+  .project-large .project-art { height: 320px; }
   .process-grid { grid-template-columns: 1fr 1fr; }
   .process-grid article:nth-child(2) { border-right: 0; }
   .process-grid article:nth-child(3), .process-grid article:nth-child(4) { margin-top: 28px; padding-top: 26px; border-top: 1px solid #ccd5e6; }
@@ -444,7 +459,8 @@ footer p { color: var(--muted); font-size: 12px; }
   .offering-grid article, .offering-grid article:not(:first-child) {
     min-height: auto; padding: 22px 0; border-right: 0; border-top: 1px solid var(--line);
   }
-  .project-art, .project-large .project-art { height: 240px; }
+  .project-art, .project-large .project-art, .pharmacy-project .project-art, .sdg-project .project-art { height: 240px; }
+  .project-large .project-info { padding: 24px; }
   .process-grid { grid-template-columns: 1fr; }
   .process-grid article, .process-grid article:not(:first-child), .process-grid article:nth-child(3) { padding: 22px 0; border-right: 0; border-top: 1px solid #ccd5e6; margin-top: 0; }
   .process-grid h3 { margin: 14px 0 8px; }
