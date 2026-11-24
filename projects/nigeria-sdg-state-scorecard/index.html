@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/projects/nigeria-sdg-state-scorecard/leaflet.css">
 <style>
 :root{--bg:#f7f9fe;--card:#fff;--fg:#101b3a;--mut:#667085;--line:#dde4f1;--acc:#2457f5;--navy:#111a35;box-sizing:border-box}
 html{scroll-padding-top:20px}
@@ -32,6 +33,10 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 .tw{overflow-x:auto}
 .map-layout{display:grid;grid-template-columns:1.55fr .45fr;gap:16px;align-items:stretch}
 .map-wrap{min-height:520px;border-radius:10px;background:linear-gradient(145deg,#f8fbff,#eef3ff);overflow:hidden;position:relative}
+.map-wrap #sdg-map{background:#f8fbff}
+#sdg-map .leaflet-control-container{display:none}
+.sdg-tooltip{border:0;border-radius:7px;background:#111a35;color:white;padding:7px 9px;font:700 12px "DM Sans",sans-serif;box-shadow:0 8px 24px rgba(17,26,53,.18)}
+.sdg-tooltip::before{border-top-color:#111a35!important}
 .map-wrap::after{content:"Loading Nigeria map…";position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:12px;pointer-events:none}
 .map-wrap.loaded::after{display:none}
 #sdg-map{width:100%;height:520px}
@@ -79,7 +84,7 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 <div class="card"><h2>Method and caveats</h2><p class="note">Composite score: each of ten indicators is min–max scaled to 0–1 across states, flipped where lower is better, then averaged with equal weights and multiplied by 100. Indicators come from different surveys and years (2019–2022). Borno has no poverty-line estimate, so its score uses nine indicators. Internet use and account ownership are the average of male and female rates. Zones follow the standard six-zone grouping, with the FCT in North Central. Rankings describe relative position, not absolute performance, and small-sample survey estimates can be noisy at state level.</p></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-<script src="/projects/nigeria-sdg-state-scorecard/plotly.min.js"></script>
+<script src="/projects/nigeria-sdg-state-scorecard/leaflet.js"></script>
 <script>
 const K=['score','poverty','mpi','food','u5','water','sanit','elec','prim','net','bank','net_gap','bank_gap'];
 const M={score:['Composite SDG score','pts',1],poverty:['Poverty rate, national line (2019)','%',0],mpi:['Multidimensional poverty headcount (2022)','%',0],food:['Food insecurity, moderate or severe (2021)','%',0],u5:['Under-5 mortality (2021)','per 1,000',0],water:['Safely managed drinking water (2021)','%',1],sanit:['Safely managed sanitation (2021)','%',1],elec:['Access to electricity (2022)','%',1],prim:['Primary school completion (2021)','%',1],net:['Internet use (2021)','%',1],bank:['Account ownership (2021)','%',1],net_gap:['Internet gender gap, men minus women (2021)','pts',0],bank_gap:['Account-ownership gender gap, men minus women (2021)','pts',0]};
@@ -100,41 +105,36 @@ $('b1').style.height=(a.length*20+40)+'px';c1&&c1.destroy();c2&&c2.destroy();
 c1=new Chart($('c1'),{type:'bar',data:{labels:a.map(r=>r.n),datasets:[{data:a.map(r=>r.v[k]),backgroundColor:a.map(r=>col[r.z])}]},options:{indexAxis:'y',maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} ${u} · ${Z[a[c.dataIndex].z]}`}}},scales:{x:ax(),y:{grid:{display:false},ticks:{color:css('--fg'),font:{size:11},autoSkip:false}}}}});
 c2=new Chart($('c2'),{type:'bar',data:{labels:Z,datasets:[{data:Z.map((z,i)=>+med(k,i).toFixed(1)),backgroundColor:col}]},options:{maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:ax({maxRotation:60}),y:ax()}}})}
 async function renderMap(k,u,g,ranked){
-  if(!window.Plotly){
-    setTimeout(()=>renderMap(k,u,g,ranked),100);
-    return;
-  }
+  if(!window.L){setTimeout(()=>renderMap(k,u,g,ranked),100);return;}
   const geo=await fetch('/projects/nigeria-sdg-state-scorecard/nigeria-states.geojson').then(r=>r.json()).catch(()=>null);
   if(!geo)return;
-  geo.features.forEach(feature=>{
-    const name=feature.properties.shapeName==='Abuja Federal Capital Territory'?'FCT':feature.properties.shapeName;
-    feature.properties.__sdgName=name;
-  });
-  const names=ranked.map(r=>r.n);
-  const values=ranked.map(r=>r.v[k]);
-  const unitName=M[k][0];
-  const trace={
-    type:'choropleth',
-    geojson:geo,
-    featureidkey:'properties.__sdgName',
-    locations:names,
-    z:values,
-    text:names.map((name,i)=>`${name}<br>${values[i]} ${u}<br>${Z[ranked[i].z]}`),
-    hovertemplate:'%{text}<extra></extra>',
-    colorscale:g?[[0,'#edf3ff'],[.25,'#b9caff'],[.5,'#7397ed'],[.75,'#2457f5'],[1,'#111a35']]:[[0,'#111a35'],[.25,'#2457f5'],[.5,'#7397ed'],[.75,'#b9caff'],[1,'#edf3ff']],
-    reversescale:false,
-    marker:{line:{color:'#fff',width:1}},
-    colorbar:{title:{text:u,side:'right'},ticksfont:{color:'#667085'},outlinewidth:0,thickness:10,len:.72}
+  const mapNode=document.querySelector('#sdg-map');
+  if(!mapNode._leafletMap)mapNode._leafletMap=L.map(mapNode,{zoomControl:false,attributionControl:false,scrollWheelZoom:false});
+  const map=mapNode._leafletMap;
+  map.eachLayer(layer=>map.removeLayer(layer));
+  const dataByName=new Map(ranked.map(r=>[r.n,r]));
+  const values=ranked.map(r=>r.v[k]).filter(v=>v!=null);
+  const low=Math.min(...values),high=Math.max(...values);
+  const colorFor=v=>{
+    if(v==null)return '#e2e8f3';
+    const t=(v-low)/(high-low||1);
+    const stops=g?[['#edf3ff',.15],['#b9caff',.4],['#7397ed',.65],['#2457f5',.85],['#111a35',1]]:[['#111a35',.15],['#2457f5',.4],['#7397ed',.65],['#b9caff',.85],['#edf3ff',1]];
+    let selected=stops[0][0];
+    for(const [color,threshold] of stops){if(t>=threshold)selected=color;}
+    return selected;
   };
-  Plotly.react('sdg-map',[trace],{
-    margin:{l:10,r:10,t:10,b:10},
-    paper_bgcolor:"rgba(0,0,0,0)",
-    plot_bgcolor:"rgba(0,0,0,0)",
-    geo:{fitbounds:"locations",visible:false,bgcolor:"rgba(0,0,0,0)"},
-    hoverlabel:{bgcolor:'#111a35',bordercolor:'#111a35',font:{color:'#fff',size:12}}
-  },{
-    responsive:true,displayModeBar:false
-  });
+  const normalize=name=>name==='Abuja Federal Capital Territory'?'FCT':name;
+  const layer=L.geoJSON(geo,{style(feature){
+    const name=normalize(feature.properties.shapeName);
+    const row=dataByName.get(name);
+    return{fillColor:row?colorFor(row.v[k]):'#e2e8f3',weight:1,color:'#fff',opacity:1,fillOpacity:.92};
+  },onEachFeature(feature,polygon){
+    const name=normalize(feature.properties.shapeName);
+    const row=dataByName.get(name);
+    polygon.bindTooltip(row?`${name}: ${row.v[k]} ${u}`:`${name}: No data`,{sticky:true,direction:'top',className:'sdg-tooltip'});
+    polygon.on({mouseover(e){e.target.setStyle({weight:2,color:'#2457f5',fillOpacity:1});},mouseout(e){layer.resetStyle(e.target);}});
+  }}).addTo(map);
+  map.fitBounds(layer.getBounds(),{padding:[18,18]});
   document.querySelector('.map-wrap')?.classList.add('loaded');
 }
 function sc(){const x=$('sx').value,y=$('sy').value,p=rows.filter(r=>r.v[x]!=null&&r.v[y]!=null),n=p.length;
