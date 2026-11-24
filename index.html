@@ -253,6 +253,31 @@
             </div>
           </article>
 
+          <article class="project-card pharmacy-project">
+            <div class="project-art pharmacy-art">
+              <img
+                src="assets/branch_revenue_before_after.png"
+                alt="Branch revenue before and after correcting price entry errors"
+              />
+            </div>
+            <div class="project-info">
+              <span>SQL · Health Analytics</span>
+              <h3>Pharmacy Sales Data Cleaning &amp; Clinical Audit</h3>
+              <p>
+                Audited 1,525 synthetic pharmacy transactions with MySQL, correcting
+                data quality issues and checking drug sales for age plausibility.
+              </p>
+              <div class="project-meta">
+                <span>MySQL</span>
+                <span>SQL</span>
+                <span>Clinical Audit</span>
+              </div>
+              <button class="case-study-link" type="button" data-case-study="pharmacy">
+                View case study <span>↗</span>
+              </button>
+            </div>
+          </article>
+
           <article class="project-card">
             <div class="project-art art-customer">
               <div class="bubble-chart" aria-hidden="true">
@@ -284,6 +309,72 @@
           </article>
         </div>
       </section>
+
+      <dialog class="case-study-modal" id="pharmacy-case-study">
+        <button class="modal-close" type="button" aria-label="Close case study">×</button>
+        <div class="case-study-header">
+          <p class="eyebrow"><span></span> SQL · Health Analytics</p>
+          <h2>Pharmacy Sales: Cleaning, Analysis &amp; Clinical Audit</h2>
+          <p>
+            Turning a messy synthetic pharmacy sales export into a reconciled,
+            analysis-ready dataset and escalating implausible clinical records for review.
+          </p>
+        </div>
+
+        <div class="case-study-facts">
+          <article><span>Dataset</span><strong>1,525</strong><small>synthetic transactions</small></article>
+          <article><span>Clean output</span><strong>1,490</strong><small>validated sales rows</small></article>
+          <article><span>Clinical flags</span><strong>70</strong><small>sales for review</small></article>
+          <article><span>Tools</span><strong>MySQL</strong><small>SQL · CTEs · window functions</small></article>
+        </div>
+
+        <div class="case-study-grid">
+          <article>
+            <span>01 · Problem</span>
+            <h3>Unreliable raw reporting</h3>
+            <p>
+              The export contained duplicate records, invalid quantities and dates,
+              inconsistent labels, impossible ages, and severely inflated prices.
+            </p>
+          </article>
+          <article>
+            <span>02 · Method</span>
+            <h3>Traceable SQL pipeline</h3>
+            <p>
+              I profiled the data, removed duplicates, moved invalid rows into a rejected
+              table, flagged corrections, reconciled the source, and ran business analysis.
+            </p>
+          </article>
+          <article>
+            <span>03 · Findings</span>
+            <h3>Errors changed the story</h3>
+            <p>
+              Eight bad prices added about ₦1.17 million in fake revenue. Iwo led corrected
+              revenue at ₦1.8507 million, while Ede had the highest average order value.
+            </p>
+          </article>
+          <article>
+            <span>04 · Recommendation</span>
+            <h3>Escalate, do not erase</h3>
+            <p>
+              The 70 clinically implausible sales should be reviewed without deleting or
+              silently changing the records, preserving both financial and medical traceability.
+            </p>
+          </article>
+        </div>
+
+        <div class="case-study-charts">
+          <img src="assets/branch_revenue_before_after.png" alt="Branch revenue before and after price correction" />
+          <img src="assets/clinical_flags_by_drug.png" alt="Clinical plausibility flags by drug" />
+        </div>
+
+        <div class="case-study-footer">
+          <span>Data is synthetic and created for analytical practice.</span>
+          <a class="button button-primary" href="https://github.com/09132380939/elijah-ojo-data-analytics-portfolio" target="_blank" rel="noreferrer">
+            View project files <span>↗</span>
+          </a>
+        </div>
+      </dialog>
 
       <section class="section process">
         <div class="section-heading">

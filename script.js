@@ -23,3 +23,23 @@ document.querySelector(".contact-form")?.addEventListener("submit", (event) => {
 });
 
 document.querySelector("#year").textContent = new Date().getFullYear();
+
+const caseStudyModal = document.querySelector("#pharmacy-case-study");
+
+document.querySelector('[data-case-study="pharmacy"]')?.addEventListener("click", () => {
+  if (typeof caseStudyModal.showModal === "function") {
+    caseStudyModal.showModal();
+  } else {
+    caseStudyModal.setAttribute("open", "");
+  }
+});
+
+document.querySelector(".modal-close")?.addEventListener("click", () => {
+  caseStudyModal.close();
+});
+
+caseStudyModal?.addEventListener("click", (event) => {
+  if (event.target === caseStudyModal) {
+    caseStudyModal.close();
+  }
+});
