@@ -147,6 +147,7 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
   font-size: 10px; font-weight: 800; box-shadow: 0 10px 30px rgba(30,48,96,.14);
 }
 .tool-chip span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: white; }
+.tool-chip span img { width: 17px; height: 17px; display: block; object-fit: contain; }
 .chip-python { right: 24px; bottom: 118px; }
 .chip-python span { background: #f3be32; color: #17203c; }
 .chip-sql { left: 82px; top: 112px; }
