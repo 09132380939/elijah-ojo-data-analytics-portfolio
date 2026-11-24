@@ -30,6 +30,17 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 @media(max-width:480px){.kpis{grid-template-columns:1fr}main{padding:38px 16px 60px}h1{font-size:36px;letter-spacing:-2px}.card{padding:16px}.topbar-inner{padding:0 16px}}
 .cv{position:relative}ul{padding-left:18px;margin:8px 0 0}li{margin-bottom:9px}
 .tw{overflow-x:auto}
+.map-layout{display:grid;grid-template-columns:1.55fr .45fr;gap:16px;align-items:stretch}
+.map-wrap{min-height:520px;border-radius:10px;background:linear-gradient(145deg,#f8fbff,#eef3ff);overflow:hidden;position:relative}
+.map-wrap::after{content:"Loading Nigeria map…";position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:12px;pointer-events:none}
+.map-wrap.loaded::after{display:none}
+#sdg-map{width:100%;height:520px}
+.map-summary{display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line);border-radius:10px;padding:20px}
+.map-summary span{color:var(--mut);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.map-summary strong{margin:8px 0 4px;font:800 38px "Manrope",sans-serif;letter-spacing:-2px;color:var(--acc)}
+.map-summary p{margin:0;color:var(--mut);font-size:12px;line-height:1.6}
+.map-summary hr{width:100%;border:0;border-top:1px solid var(--line);margin:18px 0}
+@media(max-width:760px){.map-layout{grid-template-columns:1fr}.map-wrap,#sdg-map{height:420px;min-height:420px}.map-summary{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}.map-summary hr{display:none}}
 </style></head><body>
 <header class="topbar"><div class="topbar-inner"><div class="brand"><span class="brand-mark">EO</span>Elijah Ojo</div><a class="back-link" href="../../index.html#projects">← Back to portfolio</a></div></header>
 <main>
@@ -46,6 +57,10 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 <h2>Explore any indicator</h2>
 <div class="bar"><select id="si" aria-label="Indicator"></select><span class="note" id="dir"></span></div>
 <div class="lg" id="lg"></div>
+<div class="map-layout">
+  <div class="map-wrap"><div id="sdg-map" aria-label="Interactive map of Nigeria state indicator values"></div></div>
+  <aside class="map-summary" id="map-summary"></aside>
+</div>
 <div class="g2"><div><div class="cv" id="b1"><canvas id="c1"></canvas></div></div>
 <div><div class="note" style="margin-bottom:6px">Median by geopolitical zone</div><div class="cv" style="height:260px"><canvas id="c2"></canvas></div></div></div>
 </div>
@@ -64,6 +79,7 @@ select{background:#fff;color:var(--fg);border:1px solid var(--line);border-radiu
 <div class="card"><h2>Method and caveats</h2><p class="note">Composite score: each of ten indicators is min–max scaled to 0–1 across states, flipped where lower is better, then averaged with equal weights and multiplied by 100. Indicators come from different surveys and years (2019–2022). Borno has no poverty-line estimate, so its score uses nine indicators. Internet use and account ownership are the average of male and female rates. Zones follow the standard six-zone grouping, with the FCT in North Central. Rankings describe relative position, not absolute performance, and small-sample survey estimates can be noisy at state level.</p></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="/projects/nigeria-sdg-state-scorecard/plotly.min.js"></script>
 <script>
 const K=['score','poverty','mpi','food','u5','water','sanit','elec','prim','net','bank','net_gap','bank_gap'];
 const M={score:['Composite SDG score','pts',1],poverty:['Poverty rate, national line (2019)','%',0],mpi:['Multidimensional poverty headcount (2022)','%',0],food:['Food insecurity, moderate or severe (2021)','%',0],u5:['Under-5 mortality (2021)','per 1,000',0],water:['Safely managed drinking water (2021)','%',1],sanit:['Safely managed sanitation (2021)','%',1],elec:['Access to electricity (2022)','%',1],prim:['Primary school completion (2021)','%',1],net:['Internet use (2021)','%',1],bank:['Account ownership (2021)','%',1],net_gap:['Internet gender gap, men minus women (2021)','pts',0],bank_gap:['Account-ownership gender gap, men minus women (2021)','pts',0]};
@@ -78,9 +94,49 @@ const med=(k,z)=>{const v=rows.filter(r=>r.z==z&&r.v[k]!=null).map(r=>r.v[k]).so
 function ax(f){return{grid:{color:css('--line')},ticks:{color:css('--mut'),font:{size:11},...f}}}
 function rank(){const k=$('si').value,[l,u,g]=M[k];$('dir').textContent=g?'↑ higher is better':'↓ lower is better';
 const a=rows.filter(r=>r.v[k]!=null).sort((x,y)=>g?y.v[k]-x.v[k]:x.v[k]-y.v[k]);
+$('map-summary').innerHTML=`<span>Highest</span><strong>${a[0].n}</strong><p>${a[0].v[k]} ${u}</p><hr><span>Lowest</span><strong>${a[a.length-1].n}</strong><p>${a[a.length-1].v[k]} ${u}</p>`;
+renderMap(k,u,g,a);
 $('b1').style.height=(a.length*20+40)+'px';c1&&c1.destroy();c2&&c2.destroy();
 c1=new Chart($('c1'),{type:'bar',data:{labels:a.map(r=>r.n),datasets:[{data:a.map(r=>r.v[k]),backgroundColor:a.map(r=>col[r.z])}]},options:{indexAxis:'y',maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} ${u} · ${Z[a[c.dataIndex].z]}`}}},scales:{x:ax(),y:{grid:{display:false},ticks:{color:css('--fg'),font:{size:11},autoSkip:false}}}}});
 c2=new Chart($('c2'),{type:'bar',data:{labels:Z,datasets:[{data:Z.map((z,i)=>+med(k,i).toFixed(1)),backgroundColor:col}]},options:{maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:ax({maxRotation:60}),y:ax()}}})}
+async function renderMap(k,u,g,ranked){
+  if(!window.Plotly){
+    setTimeout(()=>renderMap(k,u,g,ranked),100);
+    return;
+  }
+  const geo=await fetch('/projects/nigeria-sdg-state-scorecard/nigeria-states.geojson').then(r=>r.json()).catch(()=>null);
+  if(!geo)return;
+  geo.features.forEach(feature=>{
+    const name=feature.properties.shapeName==='Abuja Federal Capital Territory'?'FCT':feature.properties.shapeName;
+    feature.properties.__sdgName=name;
+  });
+  const names=ranked.map(r=>r.n);
+  const values=ranked.map(r=>r.v[k]);
+  const unitName=M[k][0];
+  const trace={
+    type:'choropleth',
+    geojson:geo,
+    featureidkey:'properties.__sdgName',
+    locations:names,
+    z:values,
+    text:names.map((name,i)=>`${name}<br>${values[i]} ${u}<br>${Z[ranked[i].z]}`),
+    hovertemplate:'%{text}<extra></extra>',
+    colorscale:g?[[0,'#edf3ff'],[.25,'#b9caff'],[.5,'#7397ed'],[.75,'#2457f5'],[1,'#111a35']]:[[0,'#111a35'],[.25,'#2457f5'],[.5,'#7397ed'],[.75,'#b9caff'],[1,'#edf3ff']],
+    reversescale:false,
+    marker:{line:{color:'#fff',width:1}},
+    colorbar:{title:{text:u,side:'right'},ticksfont:{color:'#667085'},outlinewidth:0,thickness:10,len:.72}
+  };
+  Plotly.react('sdg-map',[trace],{
+    margin:{l:10,r:10,t:10,b:10},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:'rgba(0,0,0,0)',
+    geo:{fitbounds:'locations',visible:false,bgcolor:'rgba(0,0,0,0)},
+    hoverlabel:{bgcolor:'#111a35',bordercolor:'#111a35',font:{color:'#fff',size:12}}
+  },{
+    responsive:true,displayModeBar:false
+  });
+  document.querySelector('.map-wrap')?.classList.add('loaded');
+}
 function sc(){const x=$('sx').value,y=$('sy').value,p=rows.filter(r=>r.v[x]!=null&&r.v[y]!=null),n=p.length;
 const mx=p.reduce((s,r)=>s+r.v[x],0)/n,my=p.reduce((s,r)=>s+r.v[y],0)/n;let sxy=0,sxx=0,syy=0;
 p.forEach(r=>{const a=r.v[x]-mx,b=r.v[y]-my;sxy+=a*b;sxx+=a*a;syy+=b*b});
